@@ -1,0 +1,33 @@
+{
+	"repositories": {
+		"acf": {
+			"type": "package",
+			"package": {
+				"name": "elliotcondon/acf",
+				"version": "4.3.4",
+				"source": {
+					"url": "git://github.com/elliotcondon/acf",
+					"type": "git",
+					"reference": "4.3.4"
+				}
+			}
+		},
+		"wp-easy-admin-table": {
+			"type": "package",
+			"package": {
+				"name": "moritzjacobs/wp-easy-admin-table",
+				"version": "1.0",
+				"source": {
+					"url": "git://github.com/moritzjacobs/wp-easy-admin-table",
+					"type": "git",
+					"reference": "master"
+				}
+			}
+		}
+	},
+	"require": {
+		"php": ">=5.3",
+		"elliotcondon/acf": "*",
+		"moritzjacobs/wp-easy-admin-table": "*"
+	}
+}
