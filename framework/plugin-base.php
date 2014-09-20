@@ -33,18 +33,30 @@ class PluginBase {
 	public $slug = '';
 	public $root_dir = '';
 	public $vendor_dir = '';
+	public $screen_id = false;
 	
 	public function __construct($prefs, $base_location) {
 	
-		$this->slug = get_called_class();
+		$this->slug = PBUtils::sluggify(get_called_class());
 		$this->root_dir = $base_location;
 		$this->vendor_dir = $base_location."/framework/vendor/";
-	
+		
 		foreach($prefs as $key=>$pref) {
 			if (method_exists($this, $key)) {
 				call_user_func_array(array($this, $key), array($pref));
 			}
 		}
+	}
+	
+	
+	public function is_plugin_screen() {
+	
+		if (!$this->screen_id) {
+			$screen = get_current_screen();
+			$this->screen_id = $screen->id;
+		}
+		
+		return substr($this->screen_id, -strlen($this->slug)) === $this->slug;
 	}
 	
 	
@@ -70,7 +82,7 @@ class PluginBase {
 				$title,
 				$title,
 				'manage_options',
-				PBUtils::sluggify($title),
+				'settings-'.$this->slug,
 				$callback
 			);
 		});
@@ -91,7 +103,7 @@ class PluginBase {
 				$title,
 				$title,
 				'manage_options',
-				PBUtils::sluggify($title),
+				'cpt-page-'.$this->slug,
 				$callback 
 			);
 		});
@@ -113,7 +125,7 @@ class PluginBase {
 		foreach ($cpts as $slug=>$prefs) {
 			PBUtils::registerCPT($slug, $prefs);
 
-			$cpt_class = $this->root_dir . "/classes/" . $slug . ".php";
+			$cpt_class = $this->root_dir . "/classes/cpt-" . $slug . ".php";
 			if (file_exists($cpt_class)) {
 				include_once("plugin-base-cpt.php");
 				require_once($cpt_class);
@@ -125,7 +137,7 @@ class PluginBase {
 	private function admin_css($files) {
 		foreach($files as $file) {
 			add_action( 'admin_enqueue_scripts', function() use ($file){
-				wp_enqueue_style($this->slug .'-admin-styles', plugins_url($file, $this->root_dir), array(), $this->version);
+				wp_enqueue_style($this->slug .'-admin-styles', plugins_url($file, dirname(__FILE__)), array(), $this->version);
 			});
 		}
 	}
@@ -135,7 +147,9 @@ class PluginBase {
 	private function admin_js($files) {
 		foreach($files as $file) {
 			add_action( 'admin_enqueue_scripts', function() use ($file){
-				wp_enqueue_script($this->slug .'-admin-script', plugins_url($file, $this->root_dir), array(), $this->version);
+				if ($this->is_plugin_screen()) {
+					wp_enqueue_script($this->slug .'-admin-script', plugins_url($file, dirname(__FILE__)), array(), $this->version);
+				}
 			});
 		}
 	}
@@ -145,7 +159,7 @@ class PluginBase {
 	private function public_css($files) {
 		foreach($files as $file) {
 			add_action( 'wp_enqueue_scripts', function() use ($file){
-				wp_enqueue_style($this->slug .'-admin-styles', plugins_url($file, $this->root_dir), array(), $this->version);
+				wp_enqueue_style($this->slug .'-admin-styles', plugins_url($file, dirname(__FILE__)), array(), $this->version);
 			});
 		}
 	}
@@ -155,7 +169,7 @@ class PluginBase {
 	private function public_js($files) {
 		foreach($files as $file) {
 			add_action( 'wp_enqueue_scripts', function() use ($file){
-				wp_enqueue_script($this->slug .'-admin-script', plugins_url($file, $this->root_dir), array(), $this->version);
+				wp_enqueue_script($this->slug .'-admin-script', plugins_url($file, dirname(__FILE__)), array(), $this->version);
 			});
 		}
 	}
