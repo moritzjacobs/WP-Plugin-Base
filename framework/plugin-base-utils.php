@@ -9,12 +9,16 @@
 class PBUtils {
 	
 		
-	/***************************************************
-	*
-	*  Make a clean URL slug from a string
-	*
-	****************************************************/
 
+
+	/**
+	 * Make a clean URL slug from a string.
+	 * 
+	 * @access public
+	 * @static
+	 * @param mixed $text
+	 * @return void
+	 */
 	public static function sluggify($text) {
 		$text = trim($text, '- ');
 		$text = str_replace(" ", "-", $text);
@@ -37,6 +41,16 @@ class PBUtils {
 	}
 	
 	
+	/**
+	 * register custom post type.
+	 * 
+	 * @access public
+	 * @static
+	 * @param mixed $slug
+	 * @param mixed $prefs
+	 * @return void
+	 */
+	 
 	public static function registerCPT($slug, $prefs) {
 
 		$post_type_args = array(
