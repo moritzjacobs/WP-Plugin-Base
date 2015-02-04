@@ -45,10 +45,11 @@ class PluginBase {
 		$purl = parse_url($_SERVER["REQUEST_URI"]);
 		parse_str(@$purl["query"], $query);
 		
+		$is_menu_page = strpos(@$query["page"], "menu-".$this->slug) === 0;
 		$is_settings_page = @$query["page"] == "settings-".$this->slug;
 		$is_cpt_page = (@$query["page"] == "cpt-page-".$this->slug) && array_key_exists($query["post_type"], $this->prefs["custom_post_types"]);
 
-		return $is_cpt_page || $is_settings_page;
+		return $is_menu_page || $is_cpt_page || $is_settings_page;
 	}
 	
 	
@@ -66,6 +67,75 @@ class PluginBase {
 		include($this->root_dir . "/" . $file);
 	}
 	
+	
+	/**
+	 * add page to sidebar menu.
+	 * 
+	 * @access protected
+	 * @param bool $title (default: false)
+	 * @param bool $callback (default: false)
+	 * @param int $pos (default: 79)
+	 * @return void
+	 */
+	protected function add_menu_page($title=false, $callback=false, $pos=79) {
+		if (!$title) {
+			$title = get_called_class() . " " . __("Settings");
+		}
+		
+		if(!$callback) {
+			$callback = array($this, "load_menu_page");
+		}
+		
+		$slug = $this->slug;
+		add_action('admin_menu', function() use($title, $callback, $pos, $slug){
+			add_menu_page(
+				$title,
+				$title,
+				'manage_options',
+				'menu-'.$slug,
+				$callback,
+				'',
+				$pos
+			);
+		});
+		
+	}
+	//  add_submenu_page( $parent_slug, $page_title, $menu_title, $capability, $menu_slug, $function );
+	
+	
+		
+	/**
+	 * add submenu page to sidebar menu.
+	 * 
+	 * @access protected
+	 * @param bool $title (default: false)
+	 * @param bool $callback (default: false)
+	 * @param int $pos (default: 79)
+	 * @return void
+	 */
+	protected function add_submenu_page($title=false, $callback=false, $pos=79) {
+		if (!$title) {
+			$title = get_called_class() . " " . __("Settings");
+		}
+		
+		if(!$callback) {
+			$callback = array($this, "load_submenu_page");
+		}
+		
+		$slug = $this->slug;
+		$subslug = PBUtils::sluggify($title);
+		add_action('admin_menu', function() use($title, $callback, $pos, $slug, $subslug){
+			add_submenu_page(
+				'menu-'.$slug,
+				$title,
+				$title,
+				'manage_options',
+				'menu-'.$slug."-".$subslug,
+				$callback
+			);
+		});
+		
+	}
 	
 	
 	/**
@@ -138,6 +208,27 @@ class PluginBase {
 	 * @return void
 	 */
 	public function load_settings_page() {
+		$this->render("views/admin/default.php", array('title'=>get_called_class()));
+	}
+
+
+	/**
+	 * load default menu view.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	public function load_menu_page() {
+		$this->render("views/admin/default.php", array('title'=>get_called_class()));
+	}
+	
+	/**
+	 * load default submenu view.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	public function load_submenu_page() {
 		$this->render("views/admin/default.php", array('title'=>get_called_class()));
 	}
 
